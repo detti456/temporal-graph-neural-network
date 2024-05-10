@@ -2,3 +2,5 @@ jupyter
 numpy
 pandas
 matplotlib
+torch
+torch_geometric
