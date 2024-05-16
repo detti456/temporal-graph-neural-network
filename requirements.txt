@@ -4,3 +4,5 @@ pandas
 matplotlib
 torch
 torch_geometric
+torch_multi_head_attention
+torch_cluster
