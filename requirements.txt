@@ -2,7 +2,15 @@ jupyter
 numpy
 pandas
 matplotlib
-torch
+seaborn
+torch==2.1.0
 torch_geometric
 torch_multi_head_attention
-torch_cluster
+
+# See https://pypi.org/project/torch-cluster/
+# Install with pip install torch-cluster -f https://data.pyg.org/whl/torch-2.1.0+${CUDA}.html where CUDA version is
+# either cpu, cu118 or cu121
+# torch_cluster
+
+# pip install torch-scatter -f https://data.pyg.org/whl/torch-2.1.0+cu118.html
+# torch-scatter
