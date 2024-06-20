@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from pandas import DataFrame
 from sklearn.cluster import AgglomerativeClustering, KMeans
+from collections import defaultdict
 
 
 def load_original_frames():
@@ -13,53 +14,106 @@ def load_original_frames():
     """
 
     column_names=['range','azimuth','doppler','snr','x','y','current_frame','seq']
+    max_frame = -10
 
-    features1: DataFrame = pd.concat(
-        [pd.read_csv(filename, names=column_names, header=None, dtype=np.float64) for filename in glob.glob("data/1/1/*.csv")])
+    features1: DataFrame = [(pd.read_csv(filename, names=column_names, header=None, dtype=np.float64), filename[14:19]) for filename in glob.glob("data/1/1/*.csv")]
+    result = defaultdict(list)
+    for i in range(len(features1)):
+        current = features1[i]
+        result[current[1]].append(current[0])
+    for k, v in result.items():
+        result[k] = pd.concat(v)
+        shift = max_frame+10
+        result[k]["current_frame"] += shift
+        max_frame = max(result[k]["current_frame"])
+        print(max_frame)
+    features1 = pd.concat([v for _, v in result.items()])
     features1.insert(8, "Label", np.zeros(len(features1), dtype=int), True)
-    max_frame = max(features1["current_frame"])
+    
 
-    features2: DataFrame = pd.concat(
-        [pd.read_csv(filename, names=column_names, header=None, dtype=np.float64) for filename in glob.glob("data/2/2/*.csv")])
+    features2: DataFrame = [(pd.read_csv(filename, names=column_names, header=None, dtype=np.float64), filename[14:19]) for filename in glob.glob("data/2/2/*.csv")]
+    result = defaultdict(list)
+    for i in range(len(features2)):
+        current = features2[i]
+        result[current[1]].append(current[0])
+    for k, v in result.items():
+        result[k] = pd.concat(v)
+        shift = max_frame+10
+        result[k]["current_frame"] += shift
+        max_frame = max(result[k]["current_frame"])
+        print(max_frame)
+    features2 = pd.concat([v for _, v in result.items()])
     features2.insert(8, "Label", np.full(len(features2), 1, dtype=int), True)
-    shift = max_frame+10
-    features2["current_frame"] += shift
-    max_frame = max(features2["current_frame"])
 
-    features3: DataFrame = pd.concat(
-        [pd.read_csv(filename, names=column_names, header=None, dtype=np.float64) for filename in glob.glob("data/3/3/*.csv")])
+
+    features3: DataFrame = [(pd.read_csv(filename, names=column_names, header=None, dtype=np.float64), filename[14:19]) for filename in glob.glob("data/3/3/*.csv")]
+    result = defaultdict(list)
+    for i in range(len(features3)):
+        current = features3[i]
+        result[current[1]].append(current[0])
+    for k, v in result.items():
+        result[k] = pd.concat(v)
+        shift = max_frame+10
+        result[k]["current_frame"] += shift
+        max_frame = max(result[k]["current_frame"])
+        print(max_frame)
+    features3 = pd.concat([v for _, v in result.items()])
     features3.insert(8, "Label", np.full(len(features3), 2, dtype=int), True)
-    shift = max_frame+10
-    features3["current_frame"] += shift
-    max_frame = max(features3["current_frame"])
 
-    features4: DataFrame = pd.concat(
-        [pd.read_csv(filename, names=column_names, header=None, dtype=np.float64) for filename in glob.glob("data/4/*.csv")])
+
+    features4: DataFrame = [(pd.read_csv(filename, names=column_names, header=None, dtype=np.float64), filename[14:19]) for filename in glob.glob("data/4/*.csv")]
+    result = defaultdict(list)
+    for i in range(len(features4)):
+        current = features4[i]
+        result[current[1]].append(current[0])
+    for k, v in result.items():
+        result[k] = pd.concat(v)
+        shift = max_frame+10
+        result[k]["current_frame"] += shift
+        max_frame = max(result[k]["current_frame"])
+        print(max_frame)
+    features4 = pd.concat([v for _, v in result.items()])
     features4.insert(8, "Label", np.full(len(features4), 3, dtype=int), True)
-    shift = max_frame+10
-    features4["current_frame"] += shift
-    max_frame = max(features4["current_frame"])
 
-    features5: DataFrame = pd.concat(
-        [pd.read_csv(filename, names=column_names, header=None, dtype=np.float64) for filename in glob.glob("data/bigger/bigger/*.csv")])
+
+    features5: DataFrame = [(pd.read_csv(filename, names=column_names, header=None, dtype=np.float64), filename[14:19]) for filename in glob.glob("data/bigger/bigger/*.csv")]
+    result = defaultdict(list)
+    for i in range(len(features5)):
+        current = features5[i]
+        result[current[1]].append(current[0])
+    for k, v in result.items():
+        result[k] = pd.concat(v)
+        shift = max_frame+10
+        result[k]["current_frame"] += shift
+        max_frame = max(result[k]["current_frame"])
+        print(max_frame)
+    features5 = pd.concat([v for _, v in result.items()])
     features5.insert(8, "Label", np.full(len(features5), 4, dtype=int), True)
-    shift = max_frame+10
-    features5["current_frame"] += shift
-    max_frame = max(features5["current_frame"])
 
-    features_bikes: DataFrame = pd.concat(
-        [pd.read_csv(filename, names=column_names, header=None, dtype=np.float32) for filename in glob.glob("data/bikes/bikes/*.csv")])
+
+    features_bikes: DataFrame = [(pd.read_csv(filename, names=column_names, header=None, dtype=np.float64), filename[14:19]) for filename in glob.glob("data/bikes/bikes/*.csv")]
+    result = defaultdict(list)
+    for i in range(len(features_bikes)):
+        current = features_bikes[i]
+        result[current[1]].append(current[0])
+    for k, v in result.items():
+        result[k] = pd.concat(v)
+        shift = max_frame+10
+        result[k]["current_frame"] += shift
+        max_frame = max(result[k]["current_frame"])
+        print(max_frame)
+    features_bikes = pd.concat([v for _, v in result.items()])
     features_bikes.insert(8, "Label", np.full(len(features_bikes), 5, dtype=int), True)
-    shift = max_frame+10
-    features_bikes["current_frame"] += shift
-    max_frame = max(features_bikes["current_frame"])
+
 
     all_data = pd.concat([features1, features2, features3, features4, features5, features_bikes])
     all_data.drop_duplicates(subset=['range','azimuth','doppler','snr','y','x','current_frame','Label'], inplace=True, ignore_index=True)
     print("Number of data points: "+str(len(all_data)))
     print("Largest frame number: "+str(max_frame))
 
+    # all_data.to_csv("data/all_data.csv", index=False, header=False)
     return all_data
+
 
 def equal_frame_loader(column_names, size):
     all_data = load_original_frames()
@@ -94,6 +148,6 @@ def equal_frame_loader(column_names, size):
             equal_frame_data.extend(frame)
 
     equal_frames = pd.DataFrame(equal_frame_data, columns = column_names)
-    equal_frames.to_csv(f"data/frames_{size}points_all_varied.csv", index=False, header=False)
+    equal_frames.to_csv(f"data/frames_{size}points_all_varied_fixed.csv", index=False, header=False)
 
     return equal_frames

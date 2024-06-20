@@ -1,4 +1,5 @@
 
+import math
 import numpy as np
 import torch
 
@@ -109,12 +110,74 @@ class AugmentationTransformer(object):
         edge_attr = np.array([d.edge_attr.cpu().detach().numpy() for d in data])
         pos = all_features[:,:,2:4]
 
-        rotated_data = rotate_point_cloud(pos)
-        jittered_data = random_scale_point_cloud(rotated_data)
-        jittered_data = shift_point_cloud(jittered_data)
-        all_features = np.append(all_features[:,:,0:2],jittered_data, axis=2)
+        # rotated_data = rotate_point_cloud(pos)
+        # jittered_data = random_scale_point_cloud(rotated_data)
+        # jittered_data = shift_point_cloud(pos)
+        # all_features = np.append(all_features[:,:,0:2],jittered_data, axis=2)
         modified = jitter_point_cloud(all_features)
         noise_edge = gaussian_noise_edge(edge_attr)
+
+        new_data = []
+        for i,d in enumerate(data):
+            new_d = d.clone()
+            new_d.x = torch.from_numpy(modified[i]).to(new_d.x.device)
+            new_d.edge_attr = torch.from_numpy(noise_edge[i]).to(new_d.edge_attr.device)
+            new_data.append(new_d)
+        return new_data
+    
+def jitter_point_cloud_list(batch_data, mean = 0, std_deviation=0.1):
+    """ Randomly jitter points. jittering is per point.
+        Input:
+          BxNx3 array, original batch of point clouds
+        Return:
+          BxNx3 array, jittered batch of point clouds
+    """
+    for i, f in enumerate(batch_data):
+        for j, p in enumerate(f):
+            batch_data[i][j] += np.random.normal(mean, std_deviation, len(batch_data[i][j])) 
+    return batch_data
+
+def gaussian_noise_edge_list(batch_data,mean = 0, std_deviation=0.1):
+    """ Randomly shift point cloud. Shift is per point cloud.
+        Input:
+          BxNx3 array, original batch of point clouds
+        Return:
+          BxNx3 array, shifted batch of point clouds
+    """
+    for i, _ in enumerate(batch_data):
+        batch_data[i] += np.random.normal(mean, std_deviation, len(batch_data[i]))
+    
+    return batch_data
+
+def restore_edge(nodes, edges):
+    """ Randomly shift point cloud. Shift is per point cloud.
+        Input:
+          BxNx3 array, original batch of point clouds
+        Return:
+          BxNx3 array, shifted batch of point clouds
+    """
+    dist = []
+    for i,_ in enumerate(nodes):
+        dist.append(np.empty(len(edges[i][0]), dtype=np.float32))
+        for j, (p, q) in enumerate(zip(edges[i][0],edges[i][1])):
+            dist[i][j] = math.dist(nodes[i][p], nodes[i][q])
+    
+    return dist
+    
+class AugmentationTransformerList(object):
+    def __init__(self, batch_size):
+        self.batch_size = batch_size
+
+    def __call__(self, data):
+        all_features = [d.x.cpu().detach().numpy() for d in data]
+        edge_attr = [d.edge_attr.cpu().detach().numpy() for d in data]
+
+        # rotated_data = rotate_point_cloud(pos)
+        # jittered_data = random_scale_point_cloud(rotated_data)
+        # jittered_data = shift_point_cloud(pos)
+        # all_features = np.append(all_features[:,:,0:2],jittered_data, axis=2)
+        modified = jitter_point_cloud_list(all_features)
+        noise_edge = gaussian_noise_edge_list(edge_attr)
 
         new_data = []
         for i,d in enumerate(data):
