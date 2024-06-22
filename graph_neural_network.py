@@ -52,7 +52,7 @@ class GeneralizedTemporalSelfAttentionDynamicEdgeConv(MessagePassing):
         return self.propagate(data.edge_index, x=x, edge_attr=data.edge_attr, size=None, batch=data.batch)
 
     def message(self, x_i: Tensor, x_j: Tensor, edge_attr) -> Tensor:
-        msg = torch.cat([x_j, x_i - x_j], dim=-1) #, torch.reshape(edge_attr, (len(edge_attr),1))
+        msg = torch.cat([x_j, x_i - x_j, torch.reshape(edge_attr, (len(edge_attr),1))], dim=-1) #, torch.reshape(edge_attr, (len(edge_attr),1))
         return self.nn(msg)
 
     def aggregate(self, inputs: Tensor, index: Tensor,
@@ -72,7 +72,7 @@ class Net(torch.nn.Module):
         super().__init__()
         self.aggr = aggr
 
-        self.conv1 = GeneralizedTemporalSelfAttentionDynamicEdgeConv(nn=MLP([2*4 , 64, 64, 64]),
+        self.conv1 = GeneralizedTemporalSelfAttentionDynamicEdgeConv(nn=MLP([2*4 +1, 64, 64, 64]),
                                                                      attention_in_features=64, 
                                                                      k=k, 
                                                                      aggr=aggr)
