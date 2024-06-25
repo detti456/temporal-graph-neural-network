@@ -110,10 +110,6 @@ class AugmentationTransformer(object):
         edge_attr = np.array([d.edge_attr.cpu().detach().numpy() for d in data])
         pos = all_features[:,:,2:4]
 
-        # rotated_data = rotate_point_cloud(pos)
-        # jittered_data = random_scale_point_cloud(rotated_data)
-        # jittered_data = shift_point_cloud(pos)
-        # all_features = np.append(all_features[:,:,0:2],jittered_data, axis=2)
         modified = jitter_point_cloud(all_features)
         noise_edge = gaussian_noise_edge(edge_attr)
 
@@ -165,17 +161,13 @@ def restore_edge(nodes, edges):
     return dist
     
 class AugmentationTransformerList(object):
-    def __init__(self, batch_size):
-        self.batch_size = batch_size
+    def __init__(self):
+        pass
 
     def __call__(self, data):
         all_features = [d.x.cpu().detach().numpy() for d in data]
         edge_attr = [d.edge_attr.cpu().detach().numpy() for d in data]
 
-        # rotated_data = rotate_point_cloud(pos)
-        # jittered_data = random_scale_point_cloud(rotated_data)
-        # jittered_data = shift_point_cloud(pos)
-        # all_features = np.append(all_features[:,:,0:2],jittered_data, axis=2)
         modified = jitter_point_cloud_list(all_features)
         noise_edge = gaussian_noise_edge_list(edge_attr)
 

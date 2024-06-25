@@ -111,7 +111,7 @@ def load_original_frames():
     print("Number of data points: "+str(len(all_data)))
     print("Largest frame number: "+str(max_frame))
 
-    # all_data.to_csv("data/all_data.csv", index=False, header=False)
+    all_data.to_csv("data/all_data.csv", index=False, header=False)
     return all_data
 
 

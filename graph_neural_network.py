@@ -52,7 +52,7 @@ class GeneralizedTemporalSelfAttentionDynamicEdgeConv(MessagePassing):
         return self.propagate(data.edge_index, x=x, edge_attr=data.edge_attr, size=None, batch=data.batch)
 
     def message(self, x_i: Tensor, x_j: Tensor, edge_attr) -> Tensor:
-        msg = torch.cat([x_j, x_i - x_j, torch.reshape(edge_attr, (len(edge_attr),1))], dim=-1) #, torch.reshape(edge_attr, (len(edge_attr),1))
+        msg = torch.cat([x_j, x_i - x_j, torch.reshape(edge_attr, (len(edge_attr),1))], dim=-1)
         return self.nn(msg)
 
     def aggregate(self, inputs: Tensor, index: Tensor,

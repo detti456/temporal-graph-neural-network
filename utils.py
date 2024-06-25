@@ -114,9 +114,7 @@ def connect_frames(current_frame:List[np.array], next_frame:List[np.array], k: i
         if len(current_nodes) < k or len(next_nodes) < k:
             return [], [], False
         edges = [math.dist(curr,next_frame[min(len(next_frame)-(k-i),max(i,curr_index-(math.ceil(k/2)-1)+i))]) for curr_index, curr in enumerate(current_frame) for i in range(k)]
-        # edges = [math.dist(p,q) for p,q in zip(current_frame, next_frame)]
         adjacency_list = [(curr,next_nodes[min(len(next_frame)-(k-i),max(i,curr_index-(math.ceil(k/2)-1)+i))]) for curr_index, curr in enumerate(current_nodes) for i in range(k)]
-        # adjacency_list = [(p,q) for p,q in zip(current_nodes, next_nodes)]
         return edges, adjacency_list, True
     edges = []
     adjacency_list = []
@@ -182,11 +180,10 @@ def create_graph_list_with_overlap(frames:np.array, selected_cols:List[str], dev
         if max(frame_diff) > 9 or relevant_frames[-1,0, 5] != relevant_frames[0,0, 5]:
             continue
 
-        # point_data_array = [df.to_numpy() for df in point_data]
         start_index = 0
         new_depth = len(point_data_array)-1
         for depth in range(new_depth):
-            #calculate the distance for the edges based on the x and y coordinates
+            # calculate the distance for the edges based on the x and y coordinates
             pairwise_edges, pairwise_adjacency_list, success = \
                 connect_frames(point_data_array[new_depth-depth][:,2:4], point_data_array[new_depth-depth-1][:,2:4], k, start_index, mode)
             if not success:
@@ -224,7 +221,6 @@ def create_graph_list_with_overlap_list(frames:list, selected_cols:List[str], de
     :param descending: Indicates whether to connect nearest neighbours or furthest neighbours
     :return: A list of Data objects, containing information about the created graphs
     """
-    # parts = int(size/split)
     if len(frames) == 0:
         return []
     graphs = []
@@ -234,10 +230,6 @@ def create_graph_list_with_overlap_list(frames:list, selected_cols:List[str], de
         adjacency_list = []
         relevant_frames = frames[i: i + frame_depth + 1]
         point_data = [[r[0:4] for r in rel] for rel in relevant_frames]
-
-        # further split frames into more frames
-        # point_data_array = np.array([[f[int((p*size)/parts):int(((p+1)*size)/parts)] for p in range(parts)] for f in point_data])
-        # point_data_array = point_data_array.reshape((frame_depth+1)*parts,-1,len(selected_cols))
 
         # only make graphs if the gap between any two frames is at most 9 and all frames have the same label
         frame_diff = [relevant_frames[i+1][0][4] - relevant_frames[i][0][4] for i in range(frame_depth)]
@@ -259,78 +251,6 @@ def create_graph_list_with_overlap_list(frames:list, selected_cols:List[str], de
             nodes.extend(point_data[new_depth-depth])
         if not success:
                 continue
-        nodes.extend(point_data[0])
-        label = frame[0,5]
-        data = Data(x=torch.tensor(np.array(nodes), dtype=torch.float32, device=device),
-                    edge_index=torch.tensor(np.array(adjacency_list), dtype=torch.int64, device=device).t().contiguous(),
-                    edge_attr=torch.tensor(np.array(edges), dtype=torch.float32, device=device),
-                    y=torch.tensor(int(label), dtype=torch.int64, device=device))
-        
-        graphs.append(data)
-    return graphs
-
-def create_graph_list_with_overlap_list_circle(frames:list, selected_cols:List[str], device:str, size:int, split:int,
-                                   k:int = 3, frame_depth:int = 2, mode:str="desc"):
-    """
-    Creates a list of Data objects that represents the graphs built from the input data. 
-    The edges in the graph connects the frames to the previous frame by connecting each 
-    points in a frame to it's nearest/furthest neighbour in the previous frame. 
-    The nodes contain information about the selected columns. 
-    The edges store information about the eucledian distance between the points.
-    
-    :param frames: Input data grouped and sorted by the frame number
-    :param device: The device to store the graphs on (cuda or cpu)
-    :param selected_cols: The names of the columns to make nodes out of
-    :param k: The number of neighbours to connect each points to
-    :param frame_depth: The depth of the graph (number of previos nodes)
-    :param descending: Indicates whether to connect nearest neighbours or furthest neighbours
-    :return: A list of Data objects, containing information about the created graphs
-    """
-    # parts = int(size/split)
-    if len(frames) == 0:
-        return []
-    graphs = []
-    for i, frame in enumerate(frames[frame_depth:]):
-        nodes = []
-        edges = []
-        adjacency_list = []
-        relevant_frames = frames[i: i + frame_depth + 1]
-        point_data = [[r[0:4] for r in rel] for rel in relevant_frames]
-
-        # further split frames into more frames
-        # point_data_array = np.array([[f[int((p*size)/parts):int(((p+1)*size)/parts)] for p in range(parts)] for f in point_data])
-        # point_data_array = point_data_array.reshape((frame_depth+1)*parts,-1,len(selected_cols))
-
-        # only make graphs if the gap between any two frames is at most 9 and all frames have the same label
-        frame_diff = [relevant_frames[i+1][0][4] - relevant_frames[i][0][4] for i in range(frame_depth)]
-        if max(frame_diff) > 9 or relevant_frames[-1][0][5] != relevant_frames[0][0][5]:
-            continue
-
-        # point_data_array = [df.to_numpy() for df in point_data]
-        start_index = 0
-        new_depth = frame_depth
-        for depth in range(new_depth):
-            #calculate the distance for the edges based on the x and y coordinates
-            pairwise_edges, pairwise_adjacency_list, success = \
-                connect_frames(np.array([data[2:4] for data in point_data[new_depth-depth]]), np.array([data[2:4] for data in point_data[new_depth-depth-1]]), k, start_index, mode)
-            if not success:
-                break
-            start_index += len(point_data[new_depth-depth])
-            edges.extend(pairwise_edges)
-            adjacency_list.extend(pairwise_adjacency_list)
-            nodes.extend(point_data[new_depth-depth])
-        if not success:
-                continue
-        
-        pairwise_edges, pairwise_adjacency_list, success = \
-                connect_frames(np.array([data[2:4] for data in point_data[0]]), np.array([data[2:4] for data in point_data[-1]]), k, start_index, mode)
-        if not success:
-                continue
-        pairwise_adjacency_list_array = np.array(pairwise_adjacency_list)
-        pairwise_adjacency_list_array[:,1] -= (start_index + len(point_data[0]))
-        edges.extend(pairwise_edges)
-        adjacency_list.extend(pairwise_adjacency_list_array.tolist())
-
         nodes.extend(point_data[0])
         label = frame[0,5]
         data = Data(x=torch.tensor(np.array(nodes), dtype=torch.float32, device=device),
@@ -362,12 +282,12 @@ def load_graphs(train:List[DataFrame], val:List[DataFrame], test:List[DataFrame]
         generated_graphs = []
         for f in frame_depths:
             for k in ks:
-                # try:
-                #     graphs = torch.load(f"data/frame_graphs_k{k}_frame_depth{f}_normalized_extended_chunk{num_chunks}_type{i}_size{size}_split{split}.pt")
-                #     print("File read")
-                # except Exception as e:
-                graphs = create_graph_list_with_overlap_list(data_set, selected_cols, device, size=size, split=split, k=k, frame_depth=f, mode=mode)
-                    # torch.save(graphs, f"data/frame_graphs_k{k}_frame_depth{f}_normalized_extended_chunk{num_chunks}_type{i}_size{size}_split{split}.pt")
+                try:
+                    graphs = torch.load(f"data/frame_graphs_k{k}_frame_depth{f}_normalized_extended_chunk{num_chunks}_type{i}_size{size}_split{split}.pt")
+                    print("File read")
+                except Exception as e:
+                    graphs = create_graph_list_with_overlap_list(data_set, selected_cols, device, size=size, split=split, k=k, frame_depth=f, mode=mode)
+                    torch.save(graphs, f"data/frame_graphs_k{k}_frame_depth{f}_normalized_extended_chunk{num_chunks}_type{i}_size{size}_split{split}.pt")
                 
                 print(f"Number of graphs generated with k = {k} and frame depth = {f} for type {i}: {len(graphs)}")
                 generated_graphs.append(graphs)
