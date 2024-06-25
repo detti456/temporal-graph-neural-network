@@ -283,11 +283,11 @@ def load_graphs(train:List[DataFrame], val:List[DataFrame], test:List[DataFrame]
         for f in frame_depths:
             for k in ks:
                 try:
-                    graphs = torch.load(f"data/frame_graphs_k{k}_frame_depth{f}_normalized_extended_chunk{num_chunks}_type{i}_size{size}_split{split}.pt")
+                    graphs = torch.load(f"data/frame_graphs_k{k}_frame_depth{f}_type{i}.pt")
                     print("File read")
                 except Exception as e:
                     graphs = create_graph_list_with_overlap_list(data_set, selected_cols, device, size=size, split=split, k=k, frame_depth=f, mode=mode)
-                    torch.save(graphs, f"data/frame_graphs_k{k}_frame_depth{f}_normalized_extended_chunk{num_chunks}_type{i}_size{size}_split{split}.pt")
+                    torch.save(graphs, f"data/frame_graphs_k{k}_frame_depth{f}_type{i}.pt")
                 
                 print(f"Number of graphs generated with k = {k} and frame depth = {f} for type {i}: {len(graphs)}")
                 generated_graphs.append(graphs)
